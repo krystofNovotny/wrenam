@@ -157,8 +157,6 @@ public class SmsCollectionProvider extends SmsResourceProvider {
                                         .delete(delete().build())
                                         .create(create().mode(ID_FROM_CLIENT).build())
                                         .build())
-                                .resourceSchema(Schema.schema().schema(
-                                        createSchema(Optional.<Context>absent())).build())
                                 .resourceSchema(Schema.schema().schema(createSchema(Optional.<Context>absent())).build())
                                 .query(query().type(QueryType.FILTER)
                                         .description(QUERY_DESCRIPTION).queryableFields().build())

@@ -390,8 +390,8 @@ class ServiceConfigManagerImpl implements SMSObjectListener {
         boolean globalConfig = false;
         boolean orgConfig = false;
         int index = 0, orgIndex = 0;
-        dn = DNUtils.normalizeDN(dn);
-        if ((index = dn.indexOf(orgNotificationSearchString)) != -1) {
+        String normalizedDn = DNUtils.normalizeDN(dn);
+        if ((index = normalizedDn.indexOf(orgNotificationSearchString)) != -1) {
             orgConfig = true;
             if (index == 0) {
                 // Organization config node is created
@@ -399,14 +399,14 @@ class ServiceConfigManagerImpl implements SMSObjectListener {
                 return;
             }
             orgIndex = orgNotificationSearchString.length();
-        } else if ((index = dn.indexOf(glbNotificationSearchString)) != -1) {
+        } else if ((index = normalizedDn.indexOf(glbNotificationSearchString)) != -1) {
             globalConfig = true;
-        } else if ((index = dn.indexOf(schemaNotificationSearchString)) != -1) {
+        } else if ((index = normalizedDn.indexOf(schemaNotificationSearchString)) != -1) {
             // Global schema changes, resulting in config change
             globalConfig = true;
             orgConfig = true;
         } else if (serviceName.equalsIgnoreCase("sunidentityrepositoryservice")
-                && (dn.startsWith(SMSEntry.ORG_PLACEHOLDER_RDN) || dn
+                && (normalizedDn.startsWith(SMSEntry.ORG_PLACEHOLDER_RDN) || normalizedDn
                         .equalsIgnoreCase(DNMapper.serviceDN))) {
             // Since sunIdentityRepositoryService has realm creation
             // attributes, we need to send notification
@@ -420,7 +420,7 @@ class ServiceConfigManagerImpl implements SMSObjectListener {
         String groupName = "";
         String compName = "";
         if (index > 1) {
-            DN compDn = DN.valueOf(dn.substring(0, index - 1));
+            DN compDn = DN.valueOf(LDAPUtils.newDN(dn).toString().substring(0, index - 1));
             List<RDN> rdns = new ArrayList<>();
             for (RDN rdn : compDn) {
                 rdns.add(rdn);
@@ -444,13 +444,13 @@ class ServiceConfigManagerImpl implements SMSObjectListener {
         }
 
         // Get organization name
-        String orgName = dn;
+        String orgName = normalizedDn;
         if (globalConfig && orgConfig) {
             // Schema change, use base DN
             orgName = ServiceManager.getBaseDN();
         } else if ((index >= 0) && orgConfig) {
             // Get org name
-            orgName = dn.substring(index + orgIndex + 1);
+            orgName = normalizedDn.substring(index + orgIndex + 1);
         }
         if (globalConfig) {
             notifyGlobalConfigChange(groupName, compName, type);
@@ -458,7 +458,7 @@ class ServiceConfigManagerImpl implements SMSObjectListener {
                 SMSEntry.eventDebug.message(
                     "ServiceConfigManagerImpl(" + serviceName +
                     "):entryChanged Sending global config change " +
-                    "notifications for DN "+ dn);
+                    "notifications for DN "+ normalizedDn);
             }
         }
         if (orgConfig) {
@@ -467,7 +467,7 @@ class ServiceConfigManagerImpl implements SMSObjectListener {
                 SMSEntry.eventDebug.message(
                     "ServiceConfigManagerImpl(" + serviceName +
                     "):entryChanged Sending org config change " +
-                    "notifications for DN " + dn);
+                    "notifications for DN " + normalizedDn);
             }
         }
     }

@@ -38,7 +38,8 @@
         <Schema
             i18nFileName="amIdRepoService"
             revisionNumber="30"
-            i18nKey="">
+            i18nKey=""
+            resourceName="datastores">
 
             <Global>
                 <AttributeSchema name="coexistenceMode"
